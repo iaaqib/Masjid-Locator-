@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="cal_method">
+        <item>Ithna Ashari</item>
+        <item>University of Islamic Science, Karachi</item>
+        <item>Islamic Society of North America</item>
+        <item>Muslim World League</item>
+        <item>Umm al-Qura, Makkah</item>
+        <item>Egyptian General Authority of Survey</item>
+        <item>Institute of Geophysics, University of Tehran</item>
+    </string-array>
+    <string-array name="cal_type">
+        <item>Jafari</item>
+        <item>Karachi</item>
+        <item>ISNA</item>
+        <item>MWL</item>
+        <item>Makkah</item>
+        <item>Egypt</item>
+        <item>Tehran</item>
+    </string-array>
+</resources>
