@@ -8,6 +8,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.json.JSONObject;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
@@ -61,7 +64,9 @@ public class MapsActivity extends Activity implements LocationListener {
         SalahTimings salahTimings = new SalahTimings();
         locMan = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 
-        salahTimings.checkIfGPSIsOn(locMan,this);
+        MapsActivity mapsActivity = new MapsActivity();
+
+        salahTimings.checkIfGPSIsOn(locMan,MapsActivity.this);
         //find out if we already have it
         if(theMap==null){
             //get the map
@@ -133,6 +138,61 @@ public class MapsActivity extends Activity implements LocationListener {
         //execute query
         new GetPlaces().execute(placesSearchStr);
     }
+
+    protected void checkIfGPSIsOn(LocationManager manager, Context context) {
+        if (!manager.getAllProviders().contains(LocationManager.GPS_PROVIDER)) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle("Location Manager");
+            builder.setMessage("Masjid Locator requires a device with GPS to work");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                }
+            });
+            builder.create().show();
+        } else {
+
+            if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                //Ask the user to enable GPS
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle("Location Manager").setCancelable(false)
+                        .setMessage("Masjid Locator would like to enable your device's GPS?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                //Launch settings, allowing user to make a change
+
+//                        Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//                            activity.startActivity(i);
+                                // Intent i = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//                            Intent i = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+//                            startActivity(i);
+//                            Intent intent = new Intent();
+//                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+//                            Uri uri = Uri.fromParts("package", getPackageName(), null);
+//                            intent.setData(uri);
+//                            startActivity(intent);
+                               startActivityForResult(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS), 0);
+                                //   startActivityForResult(new Intent(android.provider.Settings.ACTION_SETTINGS), 0);
+
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                //No location service, no Activity
+                                finish();
+                            }
+                        });
+                // create alert dialog
+                AlertDialog alertDialog = builder.create();
+
+                // show it
+                alertDialog.show();
+            }
+        }
+    }
+
 
     private class GetPlaces extends AsyncTask<String, Void, String> {
         @Override

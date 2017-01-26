@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -60,7 +61,7 @@ import java.util.TimeZone;
         setContentView(R.layout.salah_timings);
         variableInitializations();
         LocationManager manager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        checkIfGPSIsOn(manager,this);
+       // checkIfGPSIsOn(manager,this);
         Location lastLoc = manager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         final double lat = lastLoc.getLatitude();
         final double lng = lastLoc.getLongitude();
@@ -306,30 +307,39 @@ import java.util.TimeZone;
             if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 //Ask the user to enable GPS
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle("Location Manager");
-                builder.setMessage("Masjid Locator would like to enable your device's GPS?");
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
+                builder.setTitle("Location Manager").setCancelable(false)
+            .setMessage("Masjid Locator would like to enable your device's GPS?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         //Launch settings, allowing user to make a change
 
-                        try {
-                          //  Intent i = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                            Intent i = new Intent(Settings.ACTION_SETTINGS);
-                            startActivity(i);
-                        } catch (ActivityNotFoundException e) {
-                            e.printStackTrace();
-                        }
+//                        Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//                            activity.startActivity(i);
+                           // Intent i = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//                            Intent i = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+//                            startActivity(i);
+//                            Intent intent = new Intent();
+//                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+//                            Uri uri = Uri.fromParts("package", getPackageName(), null);
+//                            intent.setData(uri);
+//                            startActivity(intent);
+                       startActivityForResult(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS), 0);
+                         //   startActivityForResult(new Intent(android.provider.Settings.ACTION_SETTINGS), 0);
+
                     }
-                });
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //No location service, no Activity
                         finish();
                     }
                 });
-                builder.create().show();
+                // create alert dialog
+                AlertDialog alertDialog = builder.create();
+
+                // show it
+                alertDialog.show();
             }
         }
     }
