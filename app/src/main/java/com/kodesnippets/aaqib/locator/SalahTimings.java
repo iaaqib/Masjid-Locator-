@@ -2,6 +2,7 @@ package com.kodesnippets.aaqib.locator;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -284,8 +285,14 @@ import java.util.TimeZone;
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //Launch settings, allowing user to make a change
-                        Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                        startActivity(i);
+
+                        try {
+                          //  Intent i = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            Intent i = new Intent(Settings.ACTION_SETTINGS);
+                            startActivity(i);
+                        } catch (ActivityNotFoundException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
                 builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
