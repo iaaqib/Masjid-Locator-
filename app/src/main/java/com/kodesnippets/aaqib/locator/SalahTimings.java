@@ -26,16 +26,26 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.maps.model.LatLng;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
+import org.json.JSONObject;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 import java.util.TimeZone;
 
 /**
@@ -230,7 +240,24 @@ import java.util.TimeZone;
         maghrib = (TextView) findViewById(R.id.textView6);
         isha = (TextView) findViewById(R.id.textView7);
 
+        RequestQueue queue = Volley.newRequestQueue(this);
+        JsonObjectRequest request =  new JsonObjectRequest(
+                Request.Method.POST, Url.namazTimingsBaseUrl, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d("NAMAZTIMINGSXHANCE",response.toString());
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("NAMAZTIMINGSXHANCE",error.toString());
+                    }
+                });
+        queue.add(request);
     }
+
     private ArrayList<String> extractPrayerTimings(int calMethod, int juristic, double lat, double lng, double timeZone){
         PrayTime prayers = new PrayTime();
 

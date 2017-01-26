@@ -43,4 +43,5 @@ dependencies {
     compile 'org.codeartisans:org.json:20150729'
     compile 'commons-io:commons-io:20030203.000550'
     compile 'junit:junit:4.12'
+    compile 'com.android.volley:volley:1.0.0'
 }
