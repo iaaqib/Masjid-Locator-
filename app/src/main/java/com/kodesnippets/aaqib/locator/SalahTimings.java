@@ -7,12 +7,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.format.Time;
@@ -35,6 +37,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.maps.model.LatLng;
+import com.kodesnippets.aaqib.locator.utils.GetLocation;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -46,26 +49,44 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
 /**
  * Created by silen on 10/2/2015.
- */public class SalahTimings extends AppCompatActivity {
+ */
+public class SalahTimings extends AppCompatActivity {
 
-    TextView fajr, sunrise, dhuhr,asr,sunset,maghrib,isha;
+    private static final long MIN_TIME_BW_UPDATES = 0;
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0;
+    TextView fajr, sunrise, dhuhr, asr, sunset, maghrib, isha;
     Spinner calculationMethod;
+    Context mContext;
+
+    LocationManager mLocationManager;
+    private boolean canGetLocation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.salah_timings);
         variableInitializations();
-        LocationManager manager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-       // checkIfGPSIsOn(manager,this);
-        Location lastLoc = manager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-        final double lat = lastLoc.getLatitude();
-        final double lng = lastLoc.getLongitude();
+        LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        // checkIfGPSIsOn(manager,this);
+//        Location lastLoc = manager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+//        final double lat = lastLoc.getLatitude();
+//        final double lng = lastLoc.getLongitude();
         final double timeZone = (TimeZone.getTimeZone(Time.getCurrentTimezone()).getOffset(System.currentTimeMillis())) / (1000.0 * 60.0 * 60.0);
+
+        GetLocation getlocation = new GetLocation(mContext);
+
+        final double lat =getlocation.getLatitude();
+        final double lng = getlocation.getLongitude();
+
+       // Location myLocation = getLastKnownLocation();
+       // final double lat = myLocation.getLatitude();
+       // final double lng = myLocation.getLongitude();
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
@@ -73,12 +94,12 @@ import java.util.TimeZone;
         getData.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-               Log.d("TestPref", key);
-                String test = sharedPreferences.getString(key,"Karachi");
-                if (test.contentEquals("Jafari")){
-                    Toast.makeText(getApplication(),"Jafari",Toast.LENGTH_LONG).show();
-                    Log.d("JafariToast","Jafari");
-                    ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.Jafari,PrayTime.Hanafi,lat,lng,timeZone);
+                Log.d("TestPref", key);
+                String test = sharedPreferences.getString(key, "Karachi");
+                if (test.contentEquals("Jafari")) {
+                    Toast.makeText(getApplication(), "Jafari", Toast.LENGTH_LONG).show();
+                    Log.d("JafariToast", "Jafari");
+                    ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.Jafari, PrayTime.Hanafi, lat, lng, timeZone);
                     clearFields();
                     fajr.setText(prayerTimes.get(0));
                     sunrise.setText(prayerTimes.get(1));
@@ -88,10 +109,10 @@ import java.util.TimeZone;
                     maghrib.setText(prayerTimes.get(5));
                     isha.setText(prayerTimes.get(6));
 
-                } else if (test.contentEquals("Karachi")){
-                    Toast.makeText(getApplication(),"Karachi",Toast.LENGTH_LONG).show();
-                    Log.d("JafariToast","Karachi");
-                    ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.Karachi,PrayTime.Hanafi,lat,lng,timeZone);
+                } else if (test.contentEquals("Karachi")) {
+                    Toast.makeText(getApplication(), "Karachi", Toast.LENGTH_LONG).show();
+                    Log.d("JafariToast", "Karachi");
+                    ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.Karachi, PrayTime.Hanafi, lat, lng, timeZone);
                     clearFields();
                     fajr.setText(prayerTimes.get(0));
                     sunrise.setText(prayerTimes.get(1));
@@ -101,11 +122,10 @@ import java.util.TimeZone;
                     maghrib.setText(prayerTimes.get(5));
                     isha.setText(prayerTimes.get(6));
 
-                }
-               else if (test.contentEquals("ISNA")){
-                    Toast.makeText(getApplication(),"ISNA",Toast.LENGTH_LONG).show();
-                    Log.d("JafariToast","ISNA");
-                    ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.ISNA,PrayTime.Hanafi,lat,lng,timeZone);
+                } else if (test.contentEquals("ISNA")) {
+                    Toast.makeText(getApplication(), "ISNA", Toast.LENGTH_LONG).show();
+                    Log.d("JafariToast", "ISNA");
+                    ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.ISNA, PrayTime.Hanafi, lat, lng, timeZone);
                     clearFields();
                     fajr.setText(prayerTimes.get(0));
                     sunrise.setText(prayerTimes.get(1));
@@ -115,11 +135,10 @@ import java.util.TimeZone;
                     maghrib.setText(prayerTimes.get(5));
                     isha.setText(prayerTimes.get(6));
 
-                }
-                else if (test.contentEquals("MWL")){
-                    Toast.makeText(getApplication(),"MWL",Toast.LENGTH_LONG).show();
-                    Log.d("JafariToast","MWL");
-                    ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.MWL,PrayTime.Hanafi,lat,lng,timeZone);
+                } else if (test.contentEquals("MWL")) {
+                    Toast.makeText(getApplication(), "MWL", Toast.LENGTH_LONG).show();
+                    Log.d("JafariToast", "MWL");
+                    ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.MWL, PrayTime.Hanafi, lat, lng, timeZone);
                     clearFields();
                     fajr.setText(prayerTimes.get(0));
                     sunrise.setText(prayerTimes.get(1));
@@ -129,11 +148,10 @@ import java.util.TimeZone;
                     maghrib.setText(prayerTimes.get(5));
                     isha.setText(prayerTimes.get(6));
 
-                }
-               else if (test.contentEquals("Makkah")){
-                    Toast.makeText(getApplication(),"Makkah",Toast.LENGTH_LONG).show();
-                    Log.d("JafariToast","Makkah");
-                    ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.Makkah,PrayTime.Hanafi,lat,lng,timeZone);
+                } else if (test.contentEquals("Makkah")) {
+                    Toast.makeText(getApplication(), "Makkah", Toast.LENGTH_LONG).show();
+                    Log.d("JafariToast", "Makkah");
+                    ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.Makkah, PrayTime.Hanafi, lat, lng, timeZone);
                     clearFields();
                     fajr.setText(prayerTimes.get(0));
                     sunrise.setText(prayerTimes.get(1));
@@ -143,11 +161,10 @@ import java.util.TimeZone;
                     maghrib.setText(prayerTimes.get(5));
                     isha.setText(prayerTimes.get(6));
 
-                }
-                else if (test.contentEquals("Egypt")){
-                    Toast.makeText(getApplication(),"Egypt",Toast.LENGTH_LONG).show();
-                    Log.d("JafariToast","Egypt");
-                    ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.Egypt,PrayTime.Hanafi,lat,lng,timeZone);
+                } else if (test.contentEquals("Egypt")) {
+                    Toast.makeText(getApplication(), "Egypt", Toast.LENGTH_LONG).show();
+                    Log.d("JafariToast", "Egypt");
+                    ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.Egypt, PrayTime.Hanafi, lat, lng, timeZone);
                     clearFields();
                     fajr.setText(prayerTimes.get(0));
                     sunrise.setText(prayerTimes.get(1));
@@ -157,11 +174,10 @@ import java.util.TimeZone;
                     maghrib.setText(prayerTimes.get(5));
                     isha.setText(prayerTimes.get(6));
 
-                }
-                else {
-                    Toast.makeText(getApplication(),"Tehran",Toast.LENGTH_LONG).show();
-                    Log.d("JafariToast","tehran");
-                    ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.Tehran,PrayTime.Hanafi,lat,lng,timeZone);
+                } else {
+                    Toast.makeText(getApplication(), "Tehran", Toast.LENGTH_LONG).show();
+                    Log.d("JafariToast", "tehran");
+                    ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.Tehran, PrayTime.Hanafi, lat, lng, timeZone);
                     clearFields();
                     fajr.setText(prayerTimes.get(0));
                     sunrise.setText(prayerTimes.get(1));
@@ -175,15 +191,15 @@ import java.util.TimeZone;
             }
         });
         String getCalMethod = getData.getString("calMethod", "Karachi");
-        if(getCalMethod.contentEquals("Karachi")){
+        if (getCalMethod.contentEquals("Karachi")) {
 
         }
 
 
-        Log.d("TimeZone",""+timeZone);
+        Log.d("TimeZone", "" + timeZone);
         //create LatLng
         LatLng lastLatLng = new LatLng(lat, lng);
-     ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.Jafari,PrayTime.Shafii,lat,lng,timeZone);
+        ArrayList<String> prayerTimes = extractPrayerTimings(PrayTime.Jafari, PrayTime.Shafii, lat, lng, timeZone);
 
         fajr.setText(prayerTimes.get(0));
         sunrise.setText(prayerTimes.get(1));
@@ -200,6 +216,8 @@ import java.util.TimeZone;
         // txt.setText(lastLoc.toString());
 
     }
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -207,7 +225,8 @@ import java.util.TimeZone;
         getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
-    private void clearFields(){
+
+    private void clearFields() {
         fajr.setText("");
         sunrise.setText("");
         dhuhr.setText("");
@@ -217,8 +236,8 @@ import java.util.TimeZone;
         isha.setText("");
 
 
-
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -232,7 +251,8 @@ import java.util.TimeZone;
         }
         return super.onOptionsItemSelected(item);
     }
-    private void variableInitializations(){
+
+    private void variableInitializations() {
         fajr = (TextView) findViewById(R.id.textView1);
         sunrise = (TextView) findViewById(R.id.textView2);
         dhuhr = (TextView) findViewById(R.id.textView3);
@@ -241,25 +261,27 @@ import java.util.TimeZone;
         maghrib = (TextView) findViewById(R.id.textView6);
         isha = (TextView) findViewById(R.id.textView7);
 
+        mContext = this;
+
         RequestQueue queue = Volley.newRequestQueue(this);
-        JsonObjectRequest request =  new JsonObjectRequest(
+        JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.POST, Url.namazTimingsBaseUrl, null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.d("NAMAZTIMINGSXHANCE",response.toString());
+                        Log.d("NAMAZTIMINGSXHANCE", response.toString());
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d("NAMAZTIMINGSXHANCE",error.toString());
+                        Log.d("NAMAZTIMINGSXHANCE", error.toString());
                     }
                 });
         queue.add(request);
     }
 
-    private ArrayList<String> extractPrayerTimings(int calMethod, int juristic, double lat, double lng, double timeZone){
+    private ArrayList<String> extractPrayerTimings(int calMethod, int juristic, double lat, double lng, double timeZone) {
         PrayTime prayers = new PrayTime();
 
 
@@ -281,7 +303,7 @@ import java.util.TimeZone;
 
         for (int i = 0; i < prayerTimes.size(); i++) {
             //   System.out.println(prayerNames.get(i) + " - " + prayerTimes.get(i));
-            Log.d("Namaz",prayerTimes.get(i));
+            Log.d("Namaz", prayerTimes.get(i));
 
 
         }
@@ -289,6 +311,98 @@ import java.util.TimeZone;
 
         return prayerTimes;
     }
+
+//    public Location getLocation() {
+//        Location location;
+//        try {
+//            mLocationManager = (LocationManager) mContext
+//                    .getSystemService(LOCATION_SERVICE);
+//
+//            // getting GPS status
+//            boolean isGPSEnabled = mLocationManager
+//                    .isProviderEnabled(LocationManager.GPS_PROVIDER);
+//
+//            // getting network status
+//            boolean isNetworkEnabled = mLocationManager
+//                    .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+//
+//            if (!isGPSEnabled && !isNetworkEnabled) {
+//                // no network provider is enabled
+//            } else {
+//                this.canGetLocation = true;
+//                double latitude;
+//                double longitude;
+//                if (isNetworkEnabled) {
+//                    mLocationManager.requestLocationUpdates(
+//                            LocationManager.NETWORK_PROVIDER,
+//                            MIN_TIME_BW_UPDATES,
+//                            MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+//                    Log.d("Network", "Network Enabled");
+//                    if (mLocationManager != null) {
+//                        location = mLocationManager
+//                                .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+//                        if (location != null) {
+//                            latitude = location.getLatitude();
+//                            longitude = location.getLongitude();
+//                        }
+//                    }
+//                }
+//                // if GPS Enabled get lat/long using GPS Services
+//                if (isGPSEnabled) {
+//                    if (location == null) {
+//                        mLocationManager.requestLocationUpdates(
+//                                LocationManager.GPS_PROVIDER,
+//                                MIN_TIME_BW_UPDATES,
+//                                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+//                        Log.d("GPS", "GPS Enabled");
+//                        if (mLocationManager != null) {
+//                            location = mLocationManager
+//                                    .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+//                            if (location != null) {
+//                                latitude = location.getLatitude();
+//                                longitude = location.getLongitude();
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        return location;
+//    }
+
+//    private Location getLastKnownLocation() {
+//        mLocationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
+//
+//        List<String> providers = mLocationManager.getProviders(true);
+//        Location bestLocation = null;
+//        for (String provider : providers) {
+//            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//                // TODO: Consider calling
+//                //    ActivityCompat#requestPermissions
+//                // here to request the missing permissions, and then overriding
+//                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+//                //                                          int[] grantResults)
+//                // to handle the case where the user grants the permission. See the documentation
+//                // for ActivityCompat#requestPermissions for more details.
+//                return;
+//            }
+//            Location l = mLocationManager.getLastKnownLocation(provider);
+//            if (l == null) {
+//                continue;
+//            }
+//            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+//                // Found best last known location: %s", l);
+//                bestLocation = l;
+//            }
+//        }
+//        return bestLocation;
+//    }
+
+
 
     protected void checkIfGPSIsOn(LocationManager manager, Context context) {
         if (!manager.getAllProviders().contains(LocationManager.GPS_PROVIDER)) {

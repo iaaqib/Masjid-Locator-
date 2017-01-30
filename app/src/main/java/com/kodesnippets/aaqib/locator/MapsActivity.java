@@ -55,6 +55,8 @@ public class MapsActivity extends Activity implements LocationListener {
     //marker options
     private MarkerOptions[] places;
 
+    Context context;
+
     private boolean updateFinished = true;
 
     @SuppressLint("NewApi") @Override
@@ -63,10 +65,14 @@ public class MapsActivity extends Activity implements LocationListener {
         setContentView(R.layout.activity_maps);
         SalahTimings salahTimings = new SalahTimings();
         locMan = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        context = this;
 
-        MapsActivity mapsActivity = new MapsActivity();
 
-        salahTimings.checkIfGPSIsOn(locMan,MapsActivity.this);
+       // checkIfGPSIsOn(locMan,context);
+
+     //   MapsActivity mapsActivity = new MapsActivity();
+
+    //    salahTimings.checkIfGPSIsOn(locMan,MapsActivity.this);
         //find out if we already have it
         if(theMap==null){
             //get the map
